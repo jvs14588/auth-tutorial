@@ -2,6 +2,7 @@
 
 import { z } from "zod";
 import { RegisterSchema } from "@/schemas";
+import { createUser, getUserByEmail } from "@/data/user";
 
 export const register = async (values: z.infer<typeof RegisterSchema>) => {
   const validatedFields = RegisterSchema.safeParse(values);
@@ -11,6 +12,19 @@ export const register = async (values: z.infer<typeof RegisterSchema>) => {
       error: "Invalid fields!",
     };
   }
+
+  const { email, password, name } = validatedFields.data;
+
+  const existingUser = await getUserByEmail(email);
+
+  if (existingUser) {
+    return {
+      error: "Email already exists!",
+    };
+  }
+
+  await createUser(email, name, password);
+
   return { success: "Email sent!" };
 
   // You can add your API call here, for example:
